@@ -1,0 +1,21 @@
+{
+  "name": "html-template-literal",
+  "version": "1.0.2",
+  "description": "A tag function for producing HTML via template literals",
+  "main": "HTMLTemplateLiteral.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RyanHoldren/HTMLTemplateLiteral.git"
+  },
+  "keywords": [
+    "template",
+    "javascript",
+    "html"
+  ],
+  "author": "Ryan Holdren",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RyanHoldren/HTMLTemplateLiteral/issues"
+  },
+  "homepage": "https://github.com/RyanHoldren/HTMLTemplateLiteral#readme"
+}
