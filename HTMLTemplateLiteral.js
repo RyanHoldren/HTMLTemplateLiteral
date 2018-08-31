@@ -6,6 +6,22 @@ export function html({raw}, ... substitutions) {
 	return new HTMLTemplateLiteral(raw, substitutions);
 }
 
+const links = {};
+
+export function toStylesheetLink(css) {
+	if (css in links) {
+		return links[css];
+	}
+	const blob = new Blob([css], {type: "text/css"});
+	const url = URL.createObjectURL(blob);
+	const link = html `<link rel="stylesheet" type="text/css" href="${url}" />`;
+	links[css] = link;
+	return link;
+}
+
+const promises = {};
+const PROMISE_INDEX = "data-promise-placeholder";
+
 class HTMLTemplateLiteral {
 	constructor(raw, substitutions) {
 		this.raw = raw;
@@ -14,16 +30,22 @@ class HTMLTemplateLiteral {
 	replace(element) {
 		element.parentNode.replaceChild(this.toDocumentFragment(), element);
 	}
-	into(element) {
-		element.innerHTML = this;
-	}
 	appendTo(element) {
 		element.appendChild(this.toDocumentFragment());
 	}
 	toDocumentFragment() {
 		const template = document.createElement("template");
 		template.innerHTML = this;
-		return template.content;
+		const {content} = template;
+		Array.prototype.forEach.call(
+			content.querySelectorAll("template[" + PROMISE_INDEX + "]"),
+			template => {
+				const index = template.getAttribute(PROMISE_INDEX);
+				promises[index](template);
+				delete promises[index];
+			}
+		);
+		return content;
 	}
 	toString() {
 		return "".concat(... this);
@@ -88,23 +110,6 @@ function callbackToSnippet(callback) {
 	return `"return handleEvent(${index}, this, event)"`;
 }
 
-const promises = {};
-const PROMISE_INDEX = "data-promise-placeholder";
-
-new MutationObserver(mutations => {
-	Array.prototype.forEach.call(
-		document.querySelectorAll(`template[${PROMISE_INDEX}]`),
-		template => {
-			const index = template.getAttribute(PROMISE_INDEX);
-			promises[index](template);
-			delete promises[index];
-		}
-	); 
-}).observe(document.body, {
-	childList: true,
-	subtree: true
-});
-
 function promiseToSnippet(promise) {
 	const index = ++ counter;
 	Promise.all([
@@ -116,7 +121,7 @@ function promiseToSnippet(promise) {
 		const [template, result] = values;
 		(html `${result}`).replace(template);
 	});
-	return html `<template ${PROMISE_INDEX}="${index}" />`;
+	return html `<template ${PROMISE_INDEX}="${index}"></template>`;
 }
 
 function elementToSnippet(element) {
@@ -126,7 +131,7 @@ function elementToSnippet(element) {
 	}).then(template => {
 		template.parentNode.replaceChild(element, template);
 	});
-	return html `<template ${PROMISE_INDEX}="${index}" />`;
+	return html `<template ${PROMISE_INDEX}="${index}"></template>`;
 }
 
 function escapeHtmlEntitiesIn(string) {

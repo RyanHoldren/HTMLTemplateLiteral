@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>HTMLTemplateLiteral Tests</title>
+  </head>
+  <body>
+      <script type="module">
+
+		import {html} from './HTMLTemplateLiteral.js';
+
+		(html `<p>Test that simple case works!</p>`).appendTo(document.body);
+
+		const string = "that string variable works!";
+		(html `<p>Test ${string}</p>`).appendTo(document.body);
+
+		function *generator() {
+			yield 'that';
+			yield ' generators ';
+			yield 'work!';
+		}
+		(html `<p>Test ${generator()}</p>`).appendTo(document.body);
+
+		async function promise() {
+			return "that promises works!";
+		}
+		(html `<p>Test ${promise()}</p>`).appendTo(document.body);
+
+		(html `<p>Test <button onclick=${() => alert('Clicked!')}>Button</button></p>`).appendTo(document.body);
+
+		function element() {
+			const span = document.createElement("span");
+			span.innerText = "that elements work";
+			return span;
+		}
+		(html `<p>Test ${element()}</p>`).appendTo(document.body);
+
+		function documentFragment() {
+			return (html `that <strong>document</strong> <em>fragments</em> work!`).toDocumentFragment();
+		}
+		html `<p>Test ${documentFragment()}</p>`.appendTo(document.body);
+	</script>
+  </body>
+</html>
+
+
+
